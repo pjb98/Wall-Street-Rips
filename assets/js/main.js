@@ -56,12 +56,6 @@
   const NAMES = ["0x4a2f…9c31", "0x81ab…44e2", "0xffa0…12bd", "0x22c9…7a0f", "0x9de4…c831", "0x0f5b…88aa"];
   const CONTRACT_ADDRESS = "TBA"; // set once the contract is deployed
 
-  // Get a free project ID at https://cloud.walletconnect.com and paste it here
-  // to enable the WalletConnect option (it's the only wallet option that needs
-  // an external credential — MetaMask/Coinbase connect via the browser's
-  // injected provider and need nothing extra).
-  const WALLETCONNECT_PROJECT_ID = "";
-
   const CHAIN_NAMES = {
     "0x1": "Ethereum",
     "0x89": "Polygon",
@@ -240,44 +234,11 @@
   $$(".wallet-opt").forEach(btn => {
     btn.addEventListener("click", async () => {
       const wallet = btn.dataset.wallet;
-
-      if (wallet === "WalletConnect") {
-        if (!WALLETCONNECT_PROJECT_ID) {
-          toast("WalletConnect needs a free Project ID — see main.js");
-          return;
-        }
-        btn.disabled = true;
-        try {
-          const { EthereumProvider } = await import(
-            "https://esm.sh/@walletconnect/ethereum-provider@2"
-          );
-          const wcProvider = await EthereumProvider.init({
-            projectId: WALLETCONNECT_PROJECT_ID,
-            showQrModal: true,
-            chains: [1],
-            optionalChains: [8453, 42161, 10, 137],
-          });
-          await wcProvider.connect();
-          const chainId = "0x" + wcProvider.chainId.toString(16);
-          applyConnected(wcProvider, wcProvider.accounts[0], chainId);
-          walletModal.classList.remove("open");
-          toast(`Connected via WalletConnect on ${chainName(chainId)}`);
-        } catch (err) {
-          toast(err?.message === "User rejected the request." ? "Connection rejected" : "WalletConnect connection failed");
-        } finally {
-          btn.disabled = false;
-        }
-        return;
-      }
-
-      const rdns = wallet === "MetaMask" ? "io.metamask" : "com.coinbase.wallet";
-      const legacyFlag = wallet === "MetaMask" ? "isMetaMask" : "isCoinbaseWallet";
-      const provider = findInjectedProvider(rdns, legacyFlag);
+      const provider = findInjectedProvider("io.metamask", "isMetaMask");
 
       if (!provider) {
-        const installUrl = wallet === "MetaMask" ? "https://metamask.io/download" : "https://www.coinbase.com/wallet/downloads";
         toast(`${wallet} not detected — opening install page`);
-        window.open(installUrl, "_blank", "noopener");
+        window.open("https://metamask.io/download", "_blank", "noopener");
         return;
       }
 
