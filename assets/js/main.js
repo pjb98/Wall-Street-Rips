@@ -447,10 +447,6 @@
     }
   });
 
-  /* ---------- Live assets stat tick ---------- */
-  const liveAssetsStat = $("#liveAssetsStat");
-  setInterval(() => {
-    const base = 128;
-    liveAssetsStat.textContent = base + Math.floor(Math.random() * 6);
-  }, 5000);
+  /* ---------- Live assets stat (distinct stocks across all packs) ---------- */
+  $("#liveAssetsStat").textContent = ALL_PRIZES.length;
 })();
