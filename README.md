@@ -1,8 +1,8 @@
-# RIPS — tokenized-equity "mystery box" landing page
+# Wall Street Rips — tokenized-equity "mystery box" landing page
 
-A static recreation of the stox-onchain.fun layout: hero, box-opening
-mechanic, odds table, collection tracker, live activity feed + leaderboard,
-and a token section. Plain HTML/CSS/JS, no build step or dependencies.
+A tokenized-equity "mystery box" site: hero, box-opening mechanic, odds
+table, collection tracker, live activity feed + leaderboard, and a token
+section. Plain HTML/CSS/JS, no build step or dependencies.
 
 ## Run it
 

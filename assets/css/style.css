@@ -49,7 +49,8 @@ code{font-family:var(--font-mono)}
   border-bottom:1px solid var(--border);
 }
 .header-inner{display:flex;align-items:center;gap:24px;height:68px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.02em;margin-right:auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.02em;margin-right:auto;white-space:nowrap}
+.brand-short{display:none}
 .main-nav{display:flex;gap:28px;font-size:14px;color:var(--text-muted)}
 .main-nav a:hover{color:var(--text)}
 .header-actions{display:flex;align-items:center;gap:12px}
@@ -298,4 +299,6 @@ code{font-family:var(--font-mono)}
   .header-inner{gap:12px}
   .lang-btn{padding:6px 10px}
   .btn-connect{padding:8px 12px;font-size:13px}
+  .brand-full{display:none}
+  .brand-short{display:inline}
 }
