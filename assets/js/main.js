@@ -54,6 +54,7 @@
 
   const MAX_OPEN_QUANTITY = 10;
   const NAMES = ["0x4a2f…9c31", "0x81ab…44e2", "0xffa0…12bd", "0x22c9…7a0f", "0x9de4…c831", "0x0f5b…88aa"];
+  const CONTRACT_ADDRESS = "TBA"; // set once the contract is deployed
 
   const state = {
     lang: "en",
@@ -273,8 +274,8 @@
     pushFeedEntry(who, prize);
     addRipPoints(who, pack.cost);
   }
-  for (let i = 0; i < 5; i++) simulateActivity();
-  setInterval(simulateActivity, 4000);
+  for (let i = 0; i < 3; i++) simulateActivity();
+  setInterval(simulateActivity, 9000);
   setInterval(renderFeed, 15000);
 
   /* ---------- Weighted draw with pity floor (mirrors _drawPrize) ---------- */
@@ -431,6 +432,10 @@
       openPack(card);
     });
   });
+
+  /* ---------- Contract address (kept in sync everywhere it's shown) ---------- */
+  $("#contractAddr").textContent = CONTRACT_ADDRESS;
+  $("#oddsContractAddr").textContent = CONTRACT_ADDRESS;
 
   /* ---------- Copy contract ---------- */
   const copyBtn = $("#copyContractBtn");
