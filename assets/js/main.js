@@ -22,6 +22,28 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  const OPENING_PACK_SVG = `
+    <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" class="prize-pack-icon">
+      <defs>
+        <linearGradient id="packGradOpening" x1="14" y1="20" x2="86" y2="124" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#e2e6ee"/>
+          <stop offset="1" stop-color="#8891a0"/>
+        </linearGradient>
+        <clipPath id="packClipOpening"><rect x="14" y="20" width="72" height="104" rx="14"/></clipPath>
+      </defs>
+      <g clip-path="url(#packClipOpening)">
+        <rect x="14" y="20" width="72" height="104" fill="url(#packGradOpening)"/>
+        <rect x="14" y="20" width="72" height="20" fill="#ffffff33"/>
+        <path d="M14 40 L22 34 L30 40 L38 34 L46 40 L54 34 L62 40 L70 34 L78 40 L86 34 L86 40 Z" fill="#ffffff4d"/>
+      </g>
+      <g fill="#ffffff" opacity="0.92">
+        <rect x="36" y="86" width="9" height="18" rx="2"/>
+        <rect x="49" y="76" width="9" height="28" rx="2"/>
+        <rect x="62" y="66" width="9" height="38" rx="2"/>
+      </g>
+    </svg>
+  `;
+
   /* ---------- Nav ---------- */
   const navToggle = $("#navToggle");
   const mainNav = $("#mainNav");
@@ -189,7 +211,7 @@
 
     prizeModal.classList.add("open");
     modalStatus.textContent = "Confirming on-chain…";
-    modalBody.innerHTML = `<div class="prize-emoji">📦</div><div class="prize-sub">Opening…</div>`;
+    modalBody.innerHTML = `<div class="prize-emoji">${OPENING_PACK_SVG}</div><div class="prize-sub">Opening…</div>`;
     modalActions.innerHTML = "";
 
     setTimeout(() => {
