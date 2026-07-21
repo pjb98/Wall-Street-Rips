@@ -1,8 +1,13 @@
 # Wall Street Rips — tokenized-equity "mystery pack" landing page
 
 A tokenized-equity "mystery pack" site: hero, pack-opening mechanic, odds
-table, collection tracker, live activity feed + leaderboard, and a token
-section. Plain HTML/CSS/JS, no build step or dependencies.
+table, collection tracker, a live activity feed, a progressive jackpot pool,
+and a token section. Plain HTML/CSS/JS, no build step or dependencies.
+
+Modeled on `WallStreetRipsLiveV2.sol`: prizes are a USDG budget spent on a
+live stock purchase at settlement (not a fixed share count), packs are
+opened one at a time, and there's no pity floor or Rip Points ledger — none
+of those exist in this contract version.
 
 ## Run it
 
@@ -19,9 +24,10 @@ provider (`eth_requestAccounts` / `eth_chainId`), discovered via EIP-6963
 with a legacy `window.ethereum` fallback, and reacts to
 `accountsChanged`/`chainChanged`. No dependencies or API key needed.
 
-Note that connecting a wallet doesn't yet call the actual `WallStreetRips.sol`
-contract — `CONTRACT_ADDRESS` is still `"TBA"`, so pack-opening stays
-simulated locally until the contract is deployed and wired up (see below).
+Note that connecting a wallet doesn't yet call the actual
+`WallStreetRipsLiveV2.sol` contract — `CONTRACT_ADDRESS` is still `"TBA"`, so
+pack-opening stays simulated locally until the contract is deployed and
+wired up (see below).
 
 ## Rebrand it
 

@@ -1,58 +1,75 @@
 (() => {
-  const RARITY_ORDER = ["common", "uncommon", "rare", "epic", "legendary"];
+  const RARITY_ORDER = ["common", "uncommon", "rare", "epic", "legendary", "jackpot"];
   const RARITY_LABEL = {
     common: "Common",
     uncommon: "Uncommon",
     rare: "Rare",
     epic: "Epic",
     legendary: "Legendary",
+    jackpot: "Jackpot",
   };
 
-  // Mirrors each on-chain Pack: its own prize weight table, price, and pity rule.
+  const STOCK_NAMES = {
+    AAPL: "Apple", MSFT: "Microsoft", AMZN: "Amazon", NVDA: "Nvidia",
+    TSLA: "Tesla", GOOG: "Alphabet", META: "Meta", BRK: "Berkshire",
+  };
+
+  // Approximate live share price, used only to simulate the on-chain live
+  // purchase (the contract spends a fixed USDG budget per prize and buys
+  // whatever amount of stock that gets you at settlement time — it does not
+  // pay out a fixed share count).
+  const STOCK_PRICES = {
+    AAPL: 212.40, MSFT: 441.90, AMZN: 196.30, NVDA: 134.80,
+    TSLA: 268.15, GOOG: 178.55, META: 602.20, BRK: 705.00,
+  };
+
+  // Mirrors each on-chain Pack: its own prize weight table, bps splits, and
+  // jackpot participation. Every prize is a USDG budget spent on a live
+  // purchase, capped so it can never exceed what that one payment funds
+  // after treasury/community/jackpot cuts.
   const PACKS = {
     mini: {
       id: 1,
-      cost: 10,
-      pityEvery: 0,
-      pityMinimum: "common",
+      price: 10,
+      treasuryBps: 1000, communityBps: 500, jackpotContributionBps: 200,
+      jackpotWeight: 0, jackpotTarget: 0, // feeds the pool, can't win it
       prizes: [
-        { ticker: "AAPL", name: "Apple",     shares: 1, weight: 380, rarity: "common" },
-        { ticker: "MSFT", name: "Microsoft", shares: 1, weight: 300, rarity: "common" },
-        { ticker: "AMZN", name: "Amazon",    shares: 1, weight: 220, rarity: "uncommon" },
-        { ticker: "NVDA", name: "Nvidia",    shares: 1, weight: 90,  rarity: "rare" },
-        { ticker: "TSLA", name: "Tesla",     shares: 1, weight: 10,  rarity: "epic" },
+        { ticker: "AAPL", weight: 380, rarity: "common",    purchaseValue: 3 },
+        { ticker: "MSFT", weight: 300, rarity: "common",    purchaseValue: 3 },
+        { ticker: "AMZN", weight: 220, rarity: "uncommon",  purchaseValue: 5 },
+        { ticker: "NVDA", weight: 90,  rarity: "rare",      purchaseValue: 7 },
+        { ticker: "TSLA", weight: 10,  rarity: "epic",      purchaseValue: 8 },
       ],
     },
     standard: {
       id: 2,
-      cost: 35,
-      pityEvery: 10,
-      pityMinimum: "uncommon",
+      price: 35,
+      treasuryBps: 1000, communityBps: 500, jackpotContributionBps: 300,
+      jackpotWeight: 15, jackpotTarget: 500,
       prizes: [
-        { ticker: "AAPL", name: "Apple",     shares: 2, weight: 300, rarity: "common" },
-        { ticker: "MSFT", name: "Microsoft", shares: 2, weight: 260, rarity: "common" },
-        { ticker: "TSLA", name: "Tesla",     shares: 1, weight: 200, rarity: "uncommon" },
-        { ticker: "GOOG", name: "Alphabet",  shares: 1, weight: 150, rarity: "rare" },
-        { ticker: "META", name: "Meta",      shares: 1, weight: 70,  rarity: "epic" },
-        { ticker: "NVDA", name: "Nvidia",    shares: 2, weight: 20,  rarity: "legendary" },
+        { ticker: "AAPL", weight: 300, rarity: "common",    purchaseValue: 10 },
+        { ticker: "MSFT", weight: 260, rarity: "common",    purchaseValue: 10 },
+        { ticker: "TSLA", weight: 200, rarity: "uncommon",  purchaseValue: 15 },
+        { ticker: "GOOG", weight: 150, rarity: "rare",      purchaseValue: 20 },
+        { ticker: "META", weight: 70,  rarity: "epic",      purchaseValue: 25 },
+        { ticker: "NVDA", weight: 20,  rarity: "legendary", purchaseValue: 28 },
       ],
     },
     deluxe: {
       id: 3,
-      cost: 100,
-      pityEvery: 5,
-      pityMinimum: "rare",
+      price: 100,
+      treasuryBps: 1000, communityBps: 500, jackpotContributionBps: 500,
+      jackpotWeight: 40, jackpotTarget: 2000,
       prizes: [
-        { ticker: "MSFT", name: "Microsoft", shares: 3, weight: 260, rarity: "common" },
-        { ticker: "AMZN", name: "Amazon",    shares: 3, weight: 240, rarity: "uncommon" },
-        { ticker: "GOOG", name: "Alphabet",  shares: 2, weight: 220, rarity: "rare" },
-        { ticker: "META", name: "Meta",      shares: 2, weight: 180, rarity: "epic" },
-        { ticker: "BRK",  name: "Berkshire", shares: 1, weight: 100, rarity: "legendary" },
+        { ticker: "MSFT", weight: 260, rarity: "common",    purchaseValue: 25 },
+        { ticker: "AMZN", weight: 240, rarity: "uncommon",  purchaseValue: 35 },
+        { ticker: "GOOG", weight: 220, rarity: "rare",      purchaseValue: 50 },
+        { ticker: "META", weight: 180, rarity: "epic",      purchaseValue: 65 },
+        { ticker: "BRK",  weight: 100, rarity: "legendary", purchaseValue: 78 },
       ],
     },
   };
 
-  const MAX_OPEN_QUANTITY = 10;
   const NAMES = ["0x4a2f…9c31", "0x81ab…44e2", "0xffa0…12bd", "0x22c9…7a0f", "0x9de4…c831", "0x0f5b…88aa"];
   const CONTRACT_ADDRESS = "TBA"; // set once the contract is deployed
 
@@ -76,8 +93,8 @@
     balance: 250,
     feed: [],
     requestCounter: 18_420,
-    qty: { mini: 1, standard: 1, deluxe: 1 },
-    opensByPack: { mini: 0, standard: 0, deluxe: 0 },
+    jackpotPool: 460,   // seeded partway toward Standard's $500 target for the demo
+    jackpotLocked: 0,
   };
 
   // EIP-6963 multi-wallet discovery: each installed wallet announces itself
@@ -96,6 +113,10 @@
 
   function chainName(hexChainId) {
     return CHAIN_NAMES[hexChainId] || `Chain ${parseInt(hexChainId, 16)}`;
+  }
+
+  function formatShares(n) {
+    return n >= 1 ? n.toFixed(2) : n.toFixed(4);
   }
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -253,39 +274,92 @@
     });
   });
 
+  /* ---------- Weighted draw, including the progressive jackpot ---------- */
+  function weightedPickFromRoll(prizes, roll) {
+    for (const p of prizes) {
+      roll -= p.weight;
+      if (roll < 0) return p;
+    }
+    return prizes[prizes.length - 1];
+  }
+
+  function weightedPick(prizes) {
+    const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
+    return weightedPickFromRoll(prizes, Math.random() * totalWeight);
+  }
+
+  // Mirrors _draw(): jackpot only enters the roll when it's eligible (already
+  // fully funded by prior contributions), and when it hits, the underlying
+  // stock is picked via a second normal draw and tagged Rarity.Jackpot.
+  function drawPrize(tier, jackpotEligible) {
+    const pack = PACKS[tier];
+    const normalWeight = pack.prizes.reduce((sum, p) => sum + p.weight, 0);
+    const totalWeight = normalWeight + (jackpotEligible ? pack.jackpotWeight : 0);
+    let roll = Math.random() * totalWeight;
+
+    if (jackpotEligible && roll < pack.jackpotWeight) {
+      const underlying = weightedPick(pack.prizes);
+      return { jackpot: true, prize: underlying };
+    }
+    if (jackpotEligible) roll -= pack.jackpotWeight;
+    return { jackpot: false, prize: weightedPickFromRoll(pack.prizes, roll) };
+  }
+
+  function isJackpotEligible(pack) {
+    const available = state.jackpotPool - state.jackpotLocked;
+    return pack.jackpotWeight > 0 && pack.jackpotTarget > 0 && available >= pack.jackpotTarget;
+  }
+
   /* ---------- Odds tables (one independent weight table per pack) ---------- */
   const oddsBody = $("#oddsTable tbody");
-  const oddsPityLine = $("#oddsPityLine");
+  const oddsJackpotLine = $("#oddsJackpotLine");
   const oddsTabs = $$(".odds-tab");
   let activeOddsTier = "mini";
 
   function renderOddsTable(tier) {
     const pack = PACKS[tier];
-    const totalWeight = pack.prizes.reduce((sum, p) => sum + p.weight, 0);
+    const normalWeight = pack.prizes.reduce((sum, p) => sum + p.weight, 0);
 
     oddsBody.innerHTML = pack.prizes
       .slice()
       .sort((a, b) => b.weight - a.weight)
       .map(p => {
-        const pct = (p.weight / totalWeight) * 100;
+        const pct = (p.weight / normalWeight) * 100;
         return `
           <tr>
             <td>
               <div class="ticker-cell">
                 <span class="ticker-badge">${p.ticker.slice(0, 2)}</span>
-                ${p.shares} × ${p.ticker} <span style="color:var(--text-muted);font-weight:400">· ${p.name}</span>
+                ${p.ticker} <span style="color:var(--text-muted);font-weight:400">· ${STOCK_NAMES[p.ticker]}</span>
               </div>
             </td>
             <td><span class="rarity-pill rarity-${p.rarity}">${RARITY_LABEL[p.rarity]}</span></td>
+            <td class="price-val">$${p.purchaseValue}</td>
             <td class="odds-val">${pct.toFixed(1)}%</td>
           </tr>
         `;
       })
       .join("");
 
-    oddsPityLine.innerHTML = pack.pityEvery
-      ? `<strong>Pity floor:</strong> every ${pack.pityEvery}th open on this pack is guaranteed ${RARITY_LABEL[pack.pityMinimum]} or better, drawn from the table above.`
-      : `<strong>No pity floor</strong> on this pack — every open follows the table above exactly.`;
+    renderJackpotLine(tier);
+  }
+
+  function renderJackpotLine(tier) {
+    const pack = PACKS[tier];
+    if (pack.jackpotWeight === 0) {
+      oddsJackpotLine.innerHTML = `This pack doesn't roll for the jackpot, but ${(pack.jackpotContributionBps / 100).toFixed(0)}% of every payment still feeds the shared pool.`;
+      return;
+    }
+    const available = state.jackpotPool - state.jackpotLocked;
+    const normalWeight = pack.prizes.reduce((sum, p) => sum + p.weight, 0);
+    const oddsPct = (pack.jackpotWeight / (normalWeight + pack.jackpotWeight)) * 100;
+
+    if (available >= pack.jackpotTarget) {
+      oddsJackpotLine.innerHTML = `<strong>🎰 Jackpot is live</strong> — ${oddsPct.toFixed(2)}% chance per open, pays out $${pack.jackpotTarget} of stock. Pool: $${available.toFixed(0)}.`;
+    } else {
+      const pct = Math.min(100, (available / pack.jackpotTarget) * 100);
+      oddsJackpotLine.innerHTML = `<strong>🎰 Jackpot locked</strong> — needs the pool to reach $${pack.jackpotTarget} before it's winnable (currently $${available.toFixed(0)}, ${pct.toFixed(0)}% funded).`;
+    }
   }
 
   oddsTabs.forEach(tab => {
@@ -319,21 +393,15 @@
   }
   renderCollection();
 
-  /* ---------- Live activity feed + Rip Points leaderboard ---------- */
+  /* ---------- Live activity feed + jackpot pool panel ---------- */
   const feedList = $("#feedList");
-  const rankList = $("#rankList");
-  const ripPoints = {};
+  const jackpotPoolAmountEl = $("#jackpotPoolAmount");
+  const jackpotStatusList = $("#jackpotStatusList");
 
   function randOf(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  // Mirrors ripPoints[msg.sender] += paymentAmount — accrues on request, 1:1 with spend.
-  function addRipPoints(who, amount) {
-    ripPoints[who] = (ripPoints[who] || 0) + amount;
-    renderLeaderboard();
-  }
-
-  function pushFeedEntry(who, prize) {
-    state.feed.unshift({ who, prize, ts: Date.now() });
+  function pushFeedEntry(who, entry) {
+    state.feed.unshift({ who, entry, ts: Date.now() });
     state.feed = state.feed.slice(0, 12);
     renderFeed();
   }
@@ -344,85 +412,86 @@
       const when = secs < 60 ? `${secs}s ago` : `${Math.floor(secs / 60)}m ago`;
       return `<li>
         <span class="who">${f.who}</span>
-        <span class="what">won <strong>${f.prize.shares} ${f.prize.ticker}</strong>
-          <span class="rarity-pill rarity-${f.prize.rarity}">${RARITY_LABEL[f.prize.rarity]}</span>
+        <span class="what">won <strong>${formatShares(f.entry.shares)} ${f.entry.ticker}</strong>
+          <span class="rarity-pill rarity-${f.entry.rarity}">${RARITY_LABEL[f.entry.rarity]}</span>
         </span>
         <span class="when">${when}</span>
       </li>`;
     }).join("") || `<li><span class="who">—</span><span class="what">No activity yet</span></li>`;
   }
 
-  function renderLeaderboard() {
-    const ranked = Object.entries(ripPoints).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    rankList.innerHTML = ranked.map(([who, val], i) => `
-      <li>
-        <span class="rank-num">${i + 1}</span>
-        <span class="rank-who">${who}</span>
-        <span class="rank-val">${val} pts</span>
-      </li>
-    `).join("") || `<li><span class="rank-num">–</span><span class="rank-who">No data yet</span></li>`;
+  function renderJackpotPanel() {
+    jackpotPoolAmountEl.textContent = `$${state.jackpotPool.toFixed(0)}`;
+    const available = state.jackpotPool - state.jackpotLocked;
+
+    jackpotStatusList.innerHTML = Object.entries(PACKS)
+      .filter(([, pack]) => pack.jackpotWeight > 0)
+      .map(([tier, pack]) => {
+        const pct = Math.min(100, (available / pack.jackpotTarget) * 100);
+        const live = available >= pack.jackpotTarget;
+        const label = tier.charAt(0).toUpperCase() + tier.slice(1);
+        return `
+          <li class="jackpot-status-row">
+            <div class="jackpot-status-top">
+              <span>${label} pack</span>
+              <span class="jackpot-status-badge ${live ? "live" : "locked"}">${live ? "LIVE" : "LOCKED"}</span>
+            </div>
+            <div class="jackpot-bar"><div class="jackpot-bar-fill" style="width:${pct}%"></div></div>
+            <div class="jackpot-status-sub">$${pack.jackpotTarget} target${live ? "" : ` · ${pct.toFixed(0)}% funded`}</div>
+          </li>
+        `;
+      })
+      .join("");
+
+    renderJackpotLine(activeOddsTier);
+  }
+
+  // Runs a full open (contribution + draw + payout) against the shared
+  // jackpot state, used by both simulated background activity and the
+  // player's own opens. Returns the settled result for display.
+  function settlePack(tier, jackpotEligible) {
+    const pack = PACKS[tier];
+    const draw = drawPrize(tier, jackpotEligible);
+
+    state.jackpotPool += pack.price * pack.jackpotContributionBps / 10_000;
+
+    let stableSpent, rarity, ticker;
+    if (draw.jackpot) {
+      stableSpent = pack.jackpotTarget;
+      state.jackpotPool -= stableSpent;
+      if (jackpotEligible) state.jackpotLocked -= pack.jackpotTarget;
+      rarity = "jackpot";
+      ticker = draw.prize.ticker;
+    } else {
+      stableSpent = draw.prize.purchaseValue;
+      if (jackpotEligible) state.jackpotLocked -= pack.jackpotTarget;
+      rarity = draw.prize.rarity;
+      ticker = draw.prize.ticker;
+    }
+
+    const jitter = 1 + (Math.random() * 0.02 - 0.01); // ±1% live-price wiggle
+    const shares = (stableSpent / STOCK_PRICES[ticker]) * jitter;
+
+    return { jackpotWon: draw.jackpot, ticker, rarity, stableSpent, shares };
   }
 
   function simulateActivity() {
     const who = randOf(NAMES);
     const tier = randOf(Object.keys(PACKS));
     const pack = PACKS[tier];
-    const prize = drawPrize(tier, "common");
-    pushFeedEntry(who, prize);
-    addRipPoints(who, pack.cost);
+    const eligible = isJackpotEligible(pack);
+    if (eligible) state.jackpotLocked += pack.jackpotTarget;
+
+    const result = settlePack(tier, eligible);
+    pushFeedEntry(who, result);
+    renderJackpotPanel();
   }
   for (let i = 0; i < 3; i++) simulateActivity();
   setInterval(simulateActivity, 9000);
   setInterval(renderFeed, 15000);
+  renderJackpotPanel();
 
-  /* ---------- Weighted draw with pity floor (mirrors _drawPrize) ---------- */
-  function rarityAtLeast(rarity, minimum) {
-    return RARITY_ORDER.indexOf(rarity) >= RARITY_ORDER.indexOf(minimum);
-  }
-
-  function drawPrize(tier, minimumRarity) {
-    const pack = PACKS[tier];
-    let pool = pack.prizes.filter(p => rarityAtLeast(p.rarity, minimumRarity));
-    if (pool.length === 0) pool = pack.prizes; // a badly configured pity floor must not strand a draw
-
-    const totalWeight = pool.reduce((sum, p) => sum + p.weight, 0);
-    let roll = Math.random() * totalWeight;
-    for (const p of pool) {
-      roll -= p.weight;
-      if (roll < 0) return p;
-    }
-    return pool[pool.length - 1];
-  }
-
-  /* ---------- Quantity steppers (openPack(packId, quantity), max 10) ---------- */
-  $$(".pack-card").forEach(card => {
-    const tier = card.dataset.tier;
-    const unitCost = parseInt(card.dataset.cost, 10);
-    const qtyValue = $("[data-qty-value]", card);
-    const totalCostEl = $("[data-total-cost]", card);
-    const decBtn = $("[data-qty-dec]", card);
-    const incBtn = $("[data-qty-inc]", card);
-
-    function syncQty() {
-      const qty = state.qty[tier];
-      qtyValue.textContent = qty;
-      totalCostEl.textContent = unitCost * qty;
-      decBtn.disabled = qty <= 1;
-      incBtn.disabled = qty >= MAX_OPEN_QUANTITY;
-    }
-
-    decBtn.addEventListener("click", () => {
-      state.qty[tier] = Math.max(1, state.qty[tier] - 1);
-      syncQty();
-    });
-    incBtn.addEventListener("click", () => {
-      state.qty[tier] = Math.min(MAX_OPEN_QUANTITY, state.qty[tier] + 1);
-      syncQty();
-    });
-    syncQty();
-  });
-
-  /* ---------- Pack opening: request -> await randomness -> reveal ---------- */
+  /* ---------- Pack opening: request -> randomness -> live settlement -> reveal ---------- */
   const prizeModal = $("#prizeModal");
   const modalClose = $("#modalClose");
   const modalStatus = $("#modalStatus");
@@ -436,23 +505,25 @@
   function openPack(card) {
     const tier = card.dataset.tier;
     const pack = PACKS[tier];
-    const qty = state.qty[tier];
-    const totalCost = pack.cost * qty;
+    const cost = pack.price;
 
     if (!state.connected) {
       toast("Connect wallet to open — running in demo mode");
     }
-    if (state.balance < totalCost) {
+    if (state.balance < cost) {
       toast("Insufficient balance");
       return;
     }
 
-    // Payment escrows and Rip Points accrue as soon as the request is submitted,
-    // independent of whether randomness has been fulfilled yet.
-    state.balance -= totalCost;
+    // Payment escrows as soon as the request is submitted, exactly like
+    // openPack() on-chain — jackpot eligibility is also locked in here, at
+    // request time, so a later request can't double-spend the same pool.
+    state.balance -= cost;
     balanceHint.textContent = state.balance;
     const who = state.connected ? truncateAddress(state.address) : "You";
-    addRipPoints(who, totalCost);
+
+    const jackpotEligible = isJackpotEligible(pack);
+    if (jackpotEligible) state.jackpotLocked += pack.jackpotTarget;
 
     state.requestCounter += 1;
     const requestId = state.requestCounter;
@@ -461,7 +532,7 @@
     modalStatus.textContent = "Submitting request…";
     modalBody.innerHTML = `
       <div class="prize-emoji">${OPENING_PACK_SVG}</div>
-      <div class="prize-sub">Escrowing ${totalCost} USDG · requesting randomness</div>
+      <div class="prize-sub">Escrowing ${cost} USDG · requesting randomness</div>
     `;
     modalActions.innerHTML = "";
 
@@ -472,45 +543,32 @@
         <div class="prize-sub">Coordinator is fulfilling the request</div>
         <div class="request-id">Request #${requestId}</div>
       `;
-    }, 500);
+    }, 450);
 
     setTimeout(() => {
-      const results = [];
-      for (let i = 0; i < qty; i++) {
-        state.opensByPack[tier] += 1;
-        const absoluteOpeningNumber = state.opensByPack[tier];
-        const pity = pack.pityEvery !== 0 && absoluteOpeningNumber % pack.pityEvery === 0;
-        const prize = drawPrize(tier, pity ? pack.pityMinimum : "common");
-        results.push(prize);
-        owned.add(prize.ticker);
-        pushFeedEntry(who, prize);
-      }
+      modalStatus.textContent = "Buying stock live…";
+      modalBody.innerHTML = `
+        <div class="prize-emoji">${OPENING_PACK_SVG}</div>
+        <div class="prize-sub">Settling on-chain — purchasing the selected stock</div>
+        <div class="request-id">Request #${requestId}</div>
+      `;
+    }, 1050);
+
+    setTimeout(() => {
+      const result = settlePack(tier, jackpotEligible);
+      owned.add(result.ticker);
       renderCollection();
+      pushFeedEntry(who, result);
+      renderJackpotPanel();
 
-      if (qty === 1) {
-        const prize = results[0];
-        modalStatus.textContent = "You got";
-        modalBody.innerHTML = `
-          <div class="prize-emoji">🏆</div>
-          <div class="prize-name">${prize.shares} × ${prize.ticker}</div>
-          <span class="rarity-pill rarity-${prize.rarity}">${RARITY_LABEL[prize.rarity]}</span>
-          <div class="prize-sub">cost ${totalCost} USDG · request #${requestId}</div>
-        `;
-      } else {
-        modalStatus.textContent = `You got ${qty} prizes`;
-        modalBody.innerHTML = `
-          <div class="prize-list">
-            ${results.map(p => `
-              <div class="prize-row">
-                <span class="prize-row-name">${p.shares} × ${p.ticker}</span>
-                <span class="rarity-pill rarity-${p.rarity}">${RARITY_LABEL[p.rarity]}</span>
-              </div>
-            `).join("")}
-          </div>
-          <div class="prize-total">cost ${totalCost} USDG · request #${requestId}</div>
-        `;
-      }
-
+      const sharesLabel = formatShares(result.shares);
+      modalStatus.textContent = result.jackpotWon ? "🎰 JACKPOT!" : "You got";
+      modalBody.innerHTML = `
+        <div class="prize-emoji">${result.jackpotWon ? "🎰" : "🏆"}</div>
+        <div class="prize-name">${sharesLabel} × ${result.ticker}</div>
+        <span class="rarity-pill rarity-${result.rarity}">${RARITY_LABEL[result.rarity]}</span>
+        <div class="prize-sub">bought $${result.stableSpent.toFixed(2)} of ${STOCK_NAMES[result.ticker]} · cost ${cost} USDG · request #${requestId}</div>
+      `;
       modalActions.innerHTML = `
         <button class="btn btn-ghost" id="prizeKeep">Add to collection</button>
         <button class="btn btn-primary" id="prizeAgain">Open another</button>
@@ -520,7 +578,7 @@
         prizeModal.classList.remove("open");
         setTimeout(() => openPack(card), 200);
       });
-    }, 1700);
+    }, 1750);
   }
 
   $$("[data-open-pack]").forEach(el => {
