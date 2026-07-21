@@ -260,7 +260,7 @@
       <li>
         <span class="rank-num">${i + 1}</span>
         <span class="rank-who">${who}</span>
-        <span class="rank-val">${val} RIPS</span>
+        <span class="rank-val">${val} pts</span>
       </li>
     `).join("") || `<li><span class="rank-num">–</span><span class="rank-who">No data yet</span></li>`;
   }
@@ -363,7 +363,7 @@
     modalStatus.textContent = "Submitting request…";
     modalBody.innerHTML = `
       <div class="prize-emoji">${OPENING_PACK_SVG}</div>
-      <div class="prize-sub">Escrowing ${totalCost} RIPS · requesting randomness</div>
+      <div class="prize-sub">Escrowing ${totalCost} USDG · requesting randomness</div>
     `;
     modalActions.innerHTML = "";
 
@@ -396,7 +396,7 @@
           <div class="prize-emoji">🏆</div>
           <div class="prize-name">${prize.shares} × ${prize.ticker}</div>
           <span class="rarity-pill rarity-${prize.rarity}">${RARITY_LABEL[prize.rarity]}</span>
-          <div class="prize-sub">cost ${totalCost} RIPS · request #${requestId}</div>
+          <div class="prize-sub">cost ${totalCost} USDG · request #${requestId}</div>
         `;
       } else {
         modalStatus.textContent = `You got ${qty} prizes`;
@@ -409,7 +409,7 @@
               </div>
             `).join("")}
           </div>
-          <div class="prize-total">cost ${totalCost} RIPS · request #${requestId}</div>
+          <div class="prize-total">cost ${totalCost} USDG · request #${requestId}</div>
         `;
       }
 
