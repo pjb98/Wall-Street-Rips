@@ -107,15 +107,15 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Open a pack</h2>
-          <p>Tap the pack to rip ↑ — cost is deducted in $RIPS, prize settles on-chain instantly.</p>
+          <p>Tap the pack to rip ↑ — payment escrows on request, prizes settle once verifiable randomness is fulfilled.</p>
         </div>
 
         <div class="pack-grid">
 
-          <article class="pack-card" data-tier="mini" data-cost="10">
+          <article class="pack-card" data-tier="mini" data-pack-id="1" data-cost="10">
             <div class="pack-card-top">
               <span class="tier-pill tier-entry">Entry</span>
-              <span class="pack-cost">Cost <strong>10</strong> RIPS</span>
+              <span class="pack-cost">Cost <strong>10</strong> RIPS each</span>
             </div>
             <button class="pack-visual" data-open-pack aria-label="Open pack">
               <span class="pack-emoji">
@@ -142,14 +142,21 @@
               <span class="tap-hint">Tap the pack to rip ↑</span>
             </button>
             <h3>Mini pack</h3>
-            <p class="pack-note">Equal value — win real stock of equal worth · settled on-chain live</p>
-            <button class="btn btn-open" data-open-pack>Open pack</button>
+            <p class="pack-note">5-stock weight table · no pity floor — pure odds</p>
+            <div class="qty-row">
+              <div class="qty-stepper" data-qty-stepper>
+                <button type="button" class="qty-btn" data-qty-dec aria-label="Fewer packs">−</button>
+                <span class="qty-value" data-qty-value>1</span>
+                <button type="button" class="qty-btn" data-qty-inc aria-label="More packs">+</button>
+              </div>
+              <button class="btn btn-open" data-open-pack>Open · <span data-total-cost>10</span> RIPS</button>
+            </div>
           </article>
 
-          <article class="pack-card featured" data-tier="standard" data-cost="35">
+          <article class="pack-card featured" data-tier="standard" data-pack-id="2" data-cost="35">
             <div class="pack-card-top">
               <span class="tier-pill tier-hot">Popular</span>
-              <span class="pack-cost">Cost <strong>35</strong> RIPS</span>
+              <span class="pack-cost">Cost <strong>35</strong> RIPS each</span>
             </div>
             <button class="pack-visual" data-open-pack aria-label="Open pack">
               <span class="pack-emoji">
@@ -176,14 +183,21 @@
               <span class="tap-hint">Tap the pack to rip ↑</span>
             </button>
             <h3>Standard pack</h3>
-            <p class="pack-note">Equal value — win real stock of equal worth · settled on-chain live</p>
-            <button class="btn btn-open btn-primary" data-open-pack>Open pack</button>
+            <p class="pack-note">6-stock weight table · pity floor: Uncommon+ every 10th open</p>
+            <div class="qty-row">
+              <div class="qty-stepper" data-qty-stepper>
+                <button type="button" class="qty-btn" data-qty-dec aria-label="Fewer packs">−</button>
+                <span class="qty-value" data-qty-value>1</span>
+                <button type="button" class="qty-btn" data-qty-inc aria-label="More packs">+</button>
+              </div>
+              <button class="btn btn-open btn-primary" data-open-pack>Open · <span data-total-cost>35</span> RIPS</button>
+            </div>
           </article>
 
-          <article class="pack-card" data-tier="deluxe" data-cost="100">
+          <article class="pack-card" data-tier="deluxe" data-pack-id="3" data-cost="100">
             <div class="pack-card-top">
               <span class="tier-pill tier-pro">Pro</span>
-              <span class="pack-cost">Cost <strong>100</strong> RIPS</span>
+              <span class="pack-cost">Cost <strong>100</strong> RIPS each</span>
             </div>
             <button class="pack-visual" data-open-pack aria-label="Open pack">
               <span class="pack-emoji">
@@ -210,12 +224,19 @@
               <span class="tap-hint">Tap the pack to rip ↑</span>
             </button>
             <h3>Deluxe pack</h3>
-            <p class="pack-note">Equal value — win real stock of equal worth · settled on-chain live</p>
-            <button class="btn btn-open" data-open-pack>Open pack</button>
+            <p class="pack-note">5-stock weight table · pity floor: Rare+ every 5th open</p>
+            <div class="qty-row">
+              <div class="qty-stepper" data-qty-stepper>
+                <button type="button" class="qty-btn" data-qty-dec aria-label="Fewer packs">−</button>
+                <span class="qty-value" data-qty-value>1</span>
+                <button type="button" class="qty-btn" data-qty-inc aria-label="More packs">+</button>
+              </div>
+              <button class="btn btn-open" data-open-pack>Open · <span data-total-cost>100</span> RIPS</button>
+            </div>
           </article>
 
         </div>
-        <p class="demo-hint">Demo mode · Holding <strong id="balanceHint">250</strong> RIPS · connect contract to go on-chain</p>
+        <p class="demo-hint">Demo mode · Holding <strong id="balanceHint">250</strong> RIPS · max 10 packs per request · unfulfilled requests auto-refund after 24h</p>
       </div>
     </section>
 
@@ -224,16 +245,22 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Transparent odds · On-chain verifiable</h2>
-          <p>Each stock's win weight and live price are on-chain and public.</p>
+          <p>Every pack keeps its own independent weight table on-chain — win odds are <code>prizeWeight / totalWeight</code>, public via <code>prizeProbabilityBps()</code>.</p>
+        </div>
+        <div class="odds-tabs" id="oddsTabs">
+          <button class="odds-tab active" data-odds-tab="mini">Mini pack</button>
+          <button class="odds-tab" data-odds-tab="standard">Standard pack</button>
+          <button class="odds-tab" data-odds-tab="deluxe">Deluxe pack</button>
         </div>
         <div class="table-wrap">
           <table class="odds-table" id="oddsTable">
             <thead>
-              <tr><th>Stock</th><th>Win odds</th><th>Price</th></tr>
+              <tr><th>Prize</th><th>Rarity</th><th>Win odds</th></tr>
             </thead>
             <tbody><!-- rows injected by JS --></tbody>
           </table>
         </div>
+        <p class="odds-pity-line" id="oddsPityLine"></p>
       </div>
     </section>
 
@@ -254,13 +281,13 @@
         <div class="activity-feed">
           <div class="section-head tight">
             <h2>Activity · Ranking</h2>
-            <p>Live pack-opening feed; top cumulative value ranks the board.</p>
+            <p>Live pack-opening feed; Rip Points accrue 1:1 with $RIPS spent, same as the contract's <code>ripPoints</code> ledger.</p>
           </div>
           <h3 class="mini-heading">Live activity</h3>
           <ul class="feed-list" id="feedList"><!-- injected by JS --></ul>
         </div>
         <div class="leaderboard">
-          <h3 class="mini-heading">Leaderboard <span class="muted">· By cumulative value</span></h3>
+          <h3 class="mini-heading">Leaderboard <span class="muted">· By Rip Points</span></h3>
           <ol class="rank-list" id="rankList"><!-- injected by JS --></ol>
         </div>
       </div>
@@ -274,6 +301,20 @@
             <span class="eyebrow">Protocol token</span>
             <h2>$RIPS — the fuel for tokenized equity</h2>
             <p>Launched on-chain, priced by the market. Hold and spend $RIPS to rip packs — converting it into real on-chain equity.</p>
+            <div class="payout-split">
+              <div class="payout-item">
+                <span class="payout-pct">70%</span>
+                <span class="payout-label">Inventory reserve</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-pct">20%</span>
+                <span class="payout-label">Community rewards</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-pct">10%</span>
+                <span class="payout-label">Treasury <span class="payout-cap">(30% cap)</span></span>
+              </div>
+            </div>
             <div class="contract-row">
               <span class="contract-label">Contract</span>
               <code id="contractAddr">TBA</code>
@@ -298,7 +339,8 @@
         <span>Wall Street Rips</span>
       </div>
       <p>Protocol token · on-chain in real time</p>
-      <p class="footer-tag">Prototype · simulated data · odds match the contract</p>
+      <p class="footer-tag">Prototype · simulated data · odds mirror the on-chain weight table</p>
+      <p class="footer-tag">Unaudited contract · not available to restricted jurisdictions</p>
     </div>
   </footer>
 
@@ -322,6 +364,7 @@
         <button class="wallet-opt" data-wallet="Coinbase Wallet">🔵 Coinbase Wallet</button>
         <button class="wallet-opt" data-wallet="WalletConnect">🔗 WalletConnect</button>
       </div>
+      <p class="eligibility-note">Eligibility is checked on-chain before your first open — some jurisdictions are restricted.</p>
     </div>
   </div>
 

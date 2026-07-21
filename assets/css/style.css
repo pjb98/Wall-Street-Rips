@@ -174,11 +174,33 @@ code{font-family:var(--font-mono)}
 .tap-hint{font-size:11px;color:var(--text-dim)}
 .pack-card h3{font-size:16px;font-weight:700}
 .pack-note{font-size:12px;color:var(--text-muted)}
-.btn-open{width:100%}
+.btn-open{width:100%;flex:1}
+.qty-row{display:flex;align-items:center;gap:10px}
+.qty-stepper{
+  display:flex;align-items:center;gap:2px;border:1px solid var(--border);border-radius:999px;
+  background:#00000026;padding:4px;flex-shrink:0;
+}
+.qty-btn{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:var(--text-muted);transition:background .15s ease, color .15s ease;
+}
+.qty-btn:hover{background:var(--panel-strong);color:var(--text)}
+.qty-btn[disabled]{opacity:.35;cursor:not-allowed}
+.qty-value{width:22px;text-align:center;font-family:var(--font-mono);font-weight:700;font-size:13px}
 .demo-hint{text-align:center;margin-top:28px;font-size:13px;color:var(--text-muted)}
 .demo-hint strong{color:var(--mint)}
 
 /* Odds table */
+.section-head code{
+  background:#ffffff0f;border-radius:4px;padding:1px 5px;font-size:12px;color:var(--mint);
+}
+.odds-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.odds-tab{
+  padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text-muted);
+  border:1px solid var(--border);background:var(--panel);transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+.odds-tab:hover{color:var(--text)}
+.odds-tab.active{background:linear-gradient(90deg,var(--mint),var(--blue) 60%,var(--purple));border-color:transparent;color:#04120e}
 .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
 .odds-table{width:100%;border-collapse:collapse;font-size:14px;min-width:480px}
 .odds-table th,.odds-table td{text-align:left;padding:14px 20px}
@@ -193,6 +215,20 @@ code{font-family:var(--font-mono)}
 }
 .odds-val{color:var(--mint);font-family:var(--font-mono)}
 .price-val{font-family:var(--font-mono);color:var(--text-muted)}
+.odds-pity-line{margin-top:16px;font-size:13px;color:var(--text-muted)}
+.odds-pity-line strong{color:var(--text)}
+
+/* Rarity pills */
+.rarity-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+}
+.rarity-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.rarity-common{background:#9ca3af1f;color:var(--text-muted)}
+.rarity-uncommon{background:#00e0c626;color:var(--mint)}
+.rarity-rare{background:#4c8dfc26;color:var(--blue)}
+.rarity-epic{background:#8b5cf626;color:var(--purple)}
+.rarity-legendary{background:#ffcf5c26;color:var(--gold)}
 
 /* Collection */
 .collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
@@ -238,6 +274,14 @@ code{font-family:var(--font-mono)}
 .eyebrow{font-size:12px;color:var(--mint);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
 .token-copy h2{font-size:clamp(22px,3vw,30px);margin:10px 0 12px;font-weight:800}
 .token-copy p{color:var(--text-muted);max-width:60ch;margin-bottom:22px;font-size:14px}
+.payout-split{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.payout-item{
+  display:flex;flex-direction:column;gap:2px;background:#00000033;border:1px solid var(--border);
+  border-radius:12px;padding:12px 18px;min-width:140px;
+}
+.payout-pct{font-size:20px;font-weight:800;color:var(--mint);font-variant-numeric:tabular-nums}
+.payout-label{font-size:12px;color:var(--text-muted)}
+.payout-cap{color:var(--text-dim)}
 .contract-row{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid var(--border);border-radius:12px;padding:10px 14px;width:fit-content;margin-bottom:22px}
 .contract-label{font-size:12px;color:var(--text-muted)}
 .contract-row code{font-size:13px;color:var(--text)}
@@ -267,13 +311,22 @@ code{font-family:var(--font-mono)}
 .modal-body .prize-emoji svg{width:64px;height:83px;margin:0 auto;animation:float 2s ease-in-out infinite}
 .modal-body .prize-name{font-size:20px;font-weight:800}
 .modal-body .prize-sub{font-size:13px;color:var(--text-muted)}
+.modal-body .request-id{font-size:11px;font-family:var(--font-mono);color:var(--text-dim)}
 .modal-actions{display:flex;gap:10px;justify-content:center}
+.prize-list{display:flex;flex-direction:column;gap:8px;width:100%;max-height:260px;overflow-y:auto}
+.prize-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;
+}
+.prize-row .prize-row-name{font-weight:700}
+.prize-total{font-size:13px;color:var(--text-muted);margin-top:2px}
 .wallet-options{display:flex;flex-direction:column;gap:10px}
 .wallet-opt{
   display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--border);
   border-radius:12px;background:var(--panel);font-size:14px;font-weight:600;
 }
 .wallet-opt:hover{background:var(--panel-strong)}
+.eligibility-note{margin-top:16px;font-size:12px;color:var(--text-dim)}
 
 /* Toast */
 .toast{
