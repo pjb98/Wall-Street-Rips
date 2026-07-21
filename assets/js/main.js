@@ -56,15 +56,53 @@
   const NAMES = ["0x4a2f…9c31", "0x81ab…44e2", "0xffa0…12bd", "0x22c9…7a0f", "0x9de4…c831", "0x0f5b…88aa"];
   const CONTRACT_ADDRESS = "TBA"; // set once the contract is deployed
 
+  // Get a free project ID at https://cloud.walletconnect.com and paste it here
+  // to enable the WalletConnect option (it's the only wallet option that needs
+  // an external credential — MetaMask/Coinbase connect via the browser's
+  // injected provider and need nothing extra).
+  const WALLETCONNECT_PROJECT_ID = "";
+
+  const CHAIN_NAMES = {
+    "0x1": "Ethereum",
+    "0x89": "Polygon",
+    "0xa4b1": "Arbitrum One",
+    "0xa": "Optimism",
+    "0x2105": "Base",
+    "0x38": "BNB Chain",
+    "0xaa36a7": "Sepolia",
+    "0x14a34": "Base Sepolia",
+  };
+
   const state = {
     lang: "en",
     connected: false,
+    address: null,
+    chainId: null,
+    provider: null,
     balance: 250,
     feed: [],
     requestCounter: 18_420,
     qty: { mini: 1, standard: 1, deluxe: 1 },
     opensByPack: { mini: 0, standard: 0, deluxe: 0 },
   };
+
+  // EIP-6963 multi-wallet discovery: each installed wallet announces itself
+  // with a stable rdns (e.g. "io.metamask"), which is a more reliable way to
+  // tell wallets apart than the legacy window.ethereum.isMetaMask flags that
+  // some wallets set on themselves for compatibility.
+  const discoveredWallets = new Map();
+  window.addEventListener("eip6963:announceProvider", (event) => {
+    discoveredWallets.set(event.detail.info.rdns, event.detail);
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+  function truncateAddress(addr) {
+    return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+  }
+
+  function chainName(hexChainId) {
+    return CHAIN_NAMES[hexChainId] || `Chain ${parseInt(hexChainId, 16)}`;
+  }
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -123,16 +161,74 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
   }
 
-  /* ---------- Wallet connect (mock, with a simulated eligibility check) ---------- */
+  /* ---------- Wallet connect (real EIP-1193 injected-wallet connection) ---------- */
   const connectBtn = $("#connectBtn");
   const walletModal = $("#walletModal");
   const walletModalClose = $("#walletModalClose");
 
+  let onAccountsChanged = null;
+  let onChainChanged = null;
+
+  function findInjectedProvider(rdns, legacyFlag) {
+    const announced = discoveredWallets.get(rdns);
+    if (announced) return announced.provider;
+    if (typeof window.ethereum === "undefined") return null;
+    const candidates = window.ethereum.providers || [window.ethereum];
+    return candidates.find(p => p[legacyFlag]) || null;
+  }
+
+  function applyConnected(provider, address, chainId) {
+    state.provider = provider;
+    state.address = address;
+    state.chainId = chainId;
+    state.connected = true;
+    connectBtn.textContent = truncateAddress(address);
+    connectBtn.title = chainName(chainId);
+    connectBtn.classList.add("connected");
+
+    onAccountsChanged = (accounts) => {
+      if (accounts.length === 0) {
+        disconnectWallet();
+        toast("Wallet disconnected");
+        return;
+      }
+      state.address = accounts[0];
+      connectBtn.textContent = truncateAddress(accounts[0]);
+    };
+    onChainChanged = (newChainId) => {
+      state.chainId = newChainId;
+      connectBtn.title = chainName(newChainId);
+      toast(`Switched to ${chainName(newChainId)}`);
+    };
+    provider.on?.("accountsChanged", onAccountsChanged);
+    provider.on?.("chainChanged", onChainChanged);
+  }
+
+  function disconnectWallet() {
+    if (state.provider) {
+      state.provider.removeListener?.("accountsChanged", onAccountsChanged);
+      state.provider.removeListener?.("chainChanged", onChainChanged);
+    }
+    state.provider = null;
+    state.address = null;
+    state.chainId = null;
+    state.connected = false;
+    connectBtn.textContent = "Connect wallet";
+    connectBtn.removeAttribute("title");
+    connectBtn.classList.remove("connected");
+  }
+
+  async function connectInjected(provider, label) {
+    const accounts = await provider.request({ method: "eth_requestAccounts" });
+    const chainId = await provider.request({ method: "eth_chainId" });
+    applyConnected(provider, accounts[0], chainId);
+    walletModal.classList.remove("open");
+    toast(`Connected to ${label} on ${chainName(chainId)}`);
+  }
+
   connectBtn.addEventListener("click", () => {
     if (state.connected) {
-      state.connected = false;
-      connectBtn.textContent = "Connect wallet";
-      connectBtn.classList.remove("connected");
+      disconnectWallet();
       toast("Wallet disconnected");
       return;
     }
@@ -142,17 +238,57 @@
   walletModal.addEventListener("click", (e) => { if (e.target === walletModal) walletModal.classList.remove("open"); });
 
   $$(".wallet-opt").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
+      const wallet = btn.dataset.wallet;
+
+      if (wallet === "WalletConnect") {
+        if (!WALLETCONNECT_PROJECT_ID) {
+          toast("WalletConnect needs a free Project ID — see main.js");
+          return;
+        }
+        btn.disabled = true;
+        try {
+          const { EthereumProvider } = await import(
+            "https://esm.sh/@walletconnect/ethereum-provider@2"
+          );
+          const wcProvider = await EthereumProvider.init({
+            projectId: WALLETCONNECT_PROJECT_ID,
+            showQrModal: true,
+            chains: [1],
+            optionalChains: [8453, 42161, 10, 137],
+          });
+          await wcProvider.connect();
+          const chainId = "0x" + wcProvider.chainId.toString(16);
+          applyConnected(wcProvider, wcProvider.accounts[0], chainId);
+          walletModal.classList.remove("open");
+          toast(`Connected via WalletConnect on ${chainName(chainId)}`);
+        } catch (err) {
+          toast(err?.message === "User rejected the request." ? "Connection rejected" : "WalletConnect connection failed");
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+
+      const rdns = wallet === "MetaMask" ? "io.metamask" : "com.coinbase.wallet";
+      const legacyFlag = wallet === "MetaMask" ? "isMetaMask" : "isCoinbaseWallet";
+      const provider = findInjectedProvider(rdns, legacyFlag);
+
+      if (!provider) {
+        const installUrl = wallet === "MetaMask" ? "https://metamask.io/download" : "https://www.coinbase.com/wallet/downloads";
+        toast(`${wallet} not detected — opening install page`);
+        window.open(installUrl, "_blank", "noopener");
+        return;
+      }
+
       btn.disabled = true;
-      toast("Checking jurisdiction eligibility…");
-      setTimeout(() => {
-        state.connected = true;
-        connectBtn.textContent = "0x71…3f9a";
-        connectBtn.classList.add("connected");
-        walletModal.classList.remove("open");
+      try {
+        await connectInjected(provider, wallet);
+      } catch (err) {
+        toast(err?.code === 4001 ? "Connection request rejected" : `Couldn't connect to ${wallet}`);
+      } finally {
         btn.disabled = false;
-        toast(`Connected via ${btn.dataset.wallet} — wallet eligible`);
-      }, 600);
+      }
     });
   });
 
@@ -354,7 +490,7 @@
     // independent of whether randomness has been fulfilled yet.
     state.balance -= totalCost;
     balanceHint.textContent = state.balance;
-    const who = state.connected ? "0x71…3f9a" : "You";
+    const who = state.connected ? truncateAddress(state.address) : "You";
     addRipPoints(who, totalCost);
 
     state.requestCounter += 1;
