@@ -1,6 +1,6 @@
-# Wall Street Rips — tokenized-equity "mystery box" landing page
+# Wall Street Rips — tokenized-equity "mystery pack" landing page
 
-A tokenized-equity "mystery box" site: hero, box-opening mechanic, odds
+A tokenized-equity "mystery pack" site: hero, pack-opening mechanic, odds
 table, collection tracker, live activity feed + leaderboard, and a token
 section. Plain HTML/CSS/JS, no build step or dependencies.
 

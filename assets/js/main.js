@@ -159,7 +159,7 @@
   setInterval(simulateActivity, 4000);
   setInterval(renderFeed, 15000);
 
-  /* ---------- Box opening ---------- */
+  /* ---------- Pack opening ---------- */
   const prizeModal = $("#prizeModal");
   const modalClose = $("#modalClose");
   const modalStatus = $("#modalStatus");
@@ -176,7 +176,7 @@
     return randOf(pool);
   }
 
-  function openBox(card) {
+  function openPack(card) {
     const cost = parseInt(card.dataset.cost, 10);
 
     if (!state.connected) {
@@ -219,15 +219,15 @@
       $("#prizeKeep").addEventListener("click", () => prizeModal.classList.remove("open"));
       $("#prizeAgain").addEventListener("click", () => {
         prizeModal.classList.remove("open");
-        setTimeout(() => openBox(card), 200);
+        setTimeout(() => openPack(card), 200);
       });
     }, 1400);
   }
 
-  $$("[data-open-box]").forEach(el => {
+  $$("[data-open-pack]").forEach(el => {
     el.addEventListener("click", () => {
-      const card = el.closest(".box-card");
-      openBox(card);
+      const card = el.closest(".pack-card");
+      openPack(card);
     });
   });
 
