@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RIPS · Tokenized Equity, On-Chain</title>
+  <meta name="description" content="$RIPS — the protocol token for tokenized equity. Unbox real stock assets, settled live on-chain." />
+  <link rel="icon" type="image/svg+xml" href="./assets/img/logo.svg" />
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top">
+        <img src="./assets/img/logo.svg" alt="" width="32" height="32" />
+        <span>RIPS</span>
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#box">Box</a>
+        <a href="#odds">Odds</a>
+        <a href="#collection">Collection</a>
+        <a href="#activity">Ranking</a>
+        <a href="#token">Token</a>
+        <a href="#about">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-switch" id="langSwitch">
+          <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false">EN</button>
+          <div class="lang-menu" id="langMenu">
+            <button data-lang="en">English</button>
+            <button data-lang="zh">中文</button>
+            <button data-lang="ja">日本語</button>
+            <button data-lang="ko">한국어</button>
+          </div>
+        </div>
+        <button class="btn btn-connect" id="connectBtn">Connect wallet</button>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <span class="badge">⚡ Powered by your chain of choice</span>
+          <h1>Unbox equity.<br><span class="grad-text">On-chain. Instant. Real.</span></h1>
+          <p class="hero-desc">$RIPS is your gateway to tokenized equity — every unbox settles a real asset swap, live on-chain.</p>
+          <p class="hero-sub">1:1 value parity · Contract-verifiable odds · Settled &amp; tradable on unbox</p>
+          <div class="hero-cta-row">
+            <a href="#box" class="btn btn-primary">Launch app</a>
+            <div class="hero-stat">
+              <span class="stat-num" id="liveAssetsStat">128</span>
+              <span class="stat-label">Live assets</span>
+            </div>
+          </div>
+          <ul class="feat-list">
+            <li><span class="dot dot-mint"></span>On-chain settlement</li>
+            <li><span class="dot dot-blue"></span>1:1 value parity</li>
+            <li><span class="dot dot-purple"></span>Verifiable odds</li>
+          </ul>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-box-glow"></div>
+          <div class="hero-box">
+            <div class="hero-box-face">🎁</div>
+          </div>
+          <div class="floating-card fc-1">AAPL <span class="up">+2.4%</span></div>
+          <div class="floating-card fc-2">NVDA <span class="up">+5.1%</span></div>
+          <div class="floating-card fc-3">TSLA <span class="down">-1.2%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOX -->
+    <section class="section" id="box">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Open a box</h2>
+          <p>Tap the box to open ↑ — cost is deducted in $RIPS, prize settles on-chain instantly.</p>
+        </div>
+
+        <div class="box-grid">
+
+          <article class="box-card" data-tier="mini" data-cost="10">
+            <div class="box-card-top">
+              <span class="tier-pill tier-entry">Entry</span>
+              <span class="box-cost">Cost <strong>10</strong> RIPS</span>
+            </div>
+            <button class="box-visual" data-open-box aria-label="Open box">
+              <span class="box-emoji">📦</span>
+              <span class="tap-hint">Tap the box to open ↑</span>
+            </button>
+            <h3>Mini box</h3>
+            <p class="box-note">Equal value — win real stock of equal worth · settled on-chain live</p>
+            <button class="btn btn-open" data-open-box>Open box</button>
+          </article>
+
+          <article class="box-card featured" data-tier="standard" data-cost="35">
+            <div class="box-card-top">
+              <span class="tier-pill tier-hot">Popular</span>
+              <span class="box-cost">Cost <strong>35</strong> RIPS</span>
+            </div>
+            <button class="box-visual" data-open-box aria-label="Open box">
+              <span class="box-emoji">🎁</span>
+              <span class="tap-hint">Tap the box to open ↑</span>
+            </button>
+            <h3>Standard box</h3>
+            <p class="box-note">Equal value — win real stock of equal worth · settled on-chain live</p>
+            <button class="btn btn-open btn-primary" data-open-box>Open box</button>
+          </article>
+
+          <article class="box-card" data-tier="deluxe" data-cost="100">
+            <div class="box-card-top">
+              <span class="tier-pill tier-pro">Pro</span>
+              <span class="box-cost">Cost <strong>100</strong> RIPS</span>
+            </div>
+            <button class="box-visual" data-open-box aria-label="Open box">
+              <span class="box-emoji">💎</span>
+              <span class="tap-hint">Tap the box to open ↑</span>
+            </button>
+            <h3>Deluxe box</h3>
+            <p class="box-note">Equal value — win real stock of equal worth · settled on-chain live</p>
+            <button class="btn btn-open" data-open-box>Open box</button>
+          </article>
+
+        </div>
+        <p class="demo-hint">Demo mode · Holding <strong id="balanceHint">250</strong> RIPS · connect contract to go on-chain</p>
+      </div>
+    </section>
+
+    <!-- ODDS -->
+    <section class="section alt" id="odds">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Transparent odds · On-chain verifiable</h2>
+          <p>Each stock's win weight and live price are on-chain and public.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="odds-table" id="oddsTable">
+            <thead>
+              <tr><th>Stock</th><th>Win odds</th><th>Price</th></tr>
+            </thead>
+            <tbody><!-- rows injected by JS --></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLLECTION -->
+    <section class="section" id="collection">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>My collection</h2>
+          <p>Complete a set to claim a rare box.</p>
+        </div>
+        <div class="collection-grid" id="collectionGrid"><!-- injected by JS --></div>
+      </div>
+    </section>
+
+    <!-- ACTIVITY / RANKING -->
+    <section class="section alt" id="activity">
+      <div class="wrap two-col">
+        <div class="activity-feed">
+          <div class="section-head tight">
+            <h2>Activity · Ranking</h2>
+            <p>Live box-opening feed; top cumulative value ranks the board.</p>
+          </div>
+          <h3 class="mini-heading">Live activity</h3>
+          <ul class="feed-list" id="feedList"><!-- injected by JS --></ul>
+        </div>
+        <div class="leaderboard">
+          <h3 class="mini-heading">Leaderboard <span class="muted">· By cumulative value</span></h3>
+          <ol class="rank-list" id="rankList"><!-- injected by JS --></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOKEN -->
+    <section class="section" id="token">
+      <div class="wrap">
+        <div class="token-card">
+          <div class="token-copy">
+            <span class="eyebrow">Protocol token</span>
+            <h2>$RIPS — the fuel for tokenized equity</h2>
+            <p>Launched on-chain, priced by the market. Hold and spend $RIPS to unbox — converting it into real on-chain equity.</p>
+            <div class="contract-row">
+              <span class="contract-label">Contract</span>
+              <code id="contractAddr">TBA</code>
+              <button class="btn btn-ghost btn-sm" id="copyContractBtn">Copy</button>
+            </div>
+            <div class="token-links">
+              <a href="#" class="btn btn-primary">Trade $RIPS</a>
+              <a href="#" class="btn btn-ghost">Explorer</a>
+              <a href="#" class="btn btn-ghost">Follow on X</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" id="about">
+    <div class="wrap footer-inner">
+      <div class="brand">
+        <img src="./assets/img/logo.svg" alt="" width="24" height="24" />
+        <span>RIPS</span>
+      </div>
+      <p>Protocol token · on-chain in real time</p>
+      <p class="footer-tag">Prototype · simulated data · odds match the contract</p>
+    </div>
+  </footer>
+
+  <!-- PRIZE MODAL -->
+  <div class="modal-overlay" id="prizeModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <p class="modal-eyebrow" id="modalStatus">Opening…</p>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <!-- WALLET MODAL -->
+  <div class="modal-overlay" id="walletModal">
+    <div class="modal-card small">
+      <button class="modal-close" id="walletModalClose" aria-label="Close">✕</button>
+      <p class="modal-eyebrow">Connect a wallet</p>
+      <div class="wallet-options">
+        <button class="wallet-opt" data-wallet="MetaMask">🦊 MetaMask</button>
+        <button class="wallet-opt" data-wallet="Coinbase Wallet">🔵 Coinbase Wallet</button>
+        <button class="wallet-opt" data-wallet="WalletConnect">🔗 WalletConnect</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./assets/js/main.js"></script>
+</body>
+</html>
